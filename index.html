@@ -3,314 +3,140 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Professor Josimar Menegatt - Disciplina de Banco de Dados </title>
+<meta name="description" content="Guia de consulta — Banco de Dados: Conceitos, Normalização e SQL (MySQL). Material de apoio SENAI — Prof. Josimar Menegatt.">
+<meta name="author" content="Professor Josimar Menegatt">
+<meta name="keywords" content="banco de dados, SQL, MySQL, normalização, SENAI, NoSQL, CRUD, SGBD, técnico, desenvolvimento de sistemas">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🗄️</text></svg>">
+<title>Banco de Dados — Guia de Consulta | SENAI</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
   :root{
-    --bg:#0b1220;
-    --bg-panel:#101a2e;
-    --bg-elev:#16223b;
-    --text:#e7ecf5;
-    --text-dim:#8fa0bf;
-    --accent:#59d9c4;
-    --accent-soft:rgba(89,217,196,.12);
-    --accent-2:#f0a857;
-    --accent-2-soft:rgba(240,168,87,.14);
-    --border:#24314d;
-    --radius:10px;
-    --font-mono:'JetBrains Mono', ui-monospace, 'Cascadia Code', monospace;
-    --font-body:'IBM Plex Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    --bg:#0b1220;--bg-panel:#101a2e;--bg-elev:#16223b;
+    --text:#e7ecf5;--text-dim:#8fa0bf;
+    --accent:#59d9c4;--accent-soft:rgba(89,217,196,.12);
+    --accent-2:#f0a857;--accent-2-soft:rgba(240,168,87,.14);
+    --border:#24314d;--radius:10px;
+    --mono:'JetBrains Mono',ui-monospace,monospace;
+    --body:'IBM Plex Sans',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
   }
   *{box-sizing:border-box;}
   html{scroll-behavior:smooth;}
-  body{
-    margin:0;
-    background:var(--bg);
-    color:var(--text);
-    font-family:var(--font-body);
-    line-height:1.65;
-    font-size:16px;
-  }
-  ::selection{background:var(--accent-soft); color:var(--accent);}
-
+  body{margin:0;background:var(--bg);color:var(--text);font-family:var(--body);line-height:1.65;font-size:16px;}
+  ::selection{background:var(--accent-soft);color:var(--accent);}
   a{color:var(--accent);}
-
-  /* Layout shell */
-  .shell{
-    display:grid;
-    grid-template-columns:280px 1fr;
-    min-height:100vh;
-  }
-  @media (max-width: 900px){
+  a:focus-visible,button:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline-offset:2px;}
+  .shell{display:grid;grid-template-columns:280px 1fr;min-height:100vh;}
+  @media(max-width:900px){
     .shell{grid-template-columns:1fr;}
-    .sidebar{position:static; height:auto; border-right:none; border-bottom:1px solid var(--border);}
+    .sidebar{position:static;height:auto;border-right:none;border-bottom:1px solid var(--border);}
+    .sidebar-toggle{display:flex!important;}
+    .toc{max-height:0;overflow:hidden;transition:max-height .3s ease;}
+    .toc.open{max-height:900px;}
   }
-
-  /* Sidebar */
-  .sidebar{
-    position:sticky; top:0; height:100vh; overflow-y:auto;
-    background:var(--bg-panel);
-    border-right:1px solid var(--border);
-    padding:28px 22px 60px;
-  }
-  .brand{
-    font-family:var(--font-mono);
-    font-size:.72rem;
-    letter-spacing:.14em;
-    color:var(--accent);
-    text-transform:uppercase;
-    margin-bottom:4px;
-  }
-  .brand-title{
-    font-family:var(--font-mono);
-    font-weight:700;
-    font-size:1.18rem;
-    color:var(--text);
-    margin:0 0 2px;
-  }
-  .brand-sub{
-    color:var(--text-dim);
-    font-size:.83rem;
-    margin-bottom:26px;
-  }
-  .toc{list-style:none; margin:0; padding:0;}
+  .sidebar{position:sticky;top:0;height:100vh;overflow-y:auto;background:var(--bg-panel);border-right:1px solid var(--border);padding:28px 22px 60px;}
+  .sidebar-toggle{display:none;align-items:center;justify-content:space-between;width:100%;padding:8px 0;cursor:pointer;background:none;border:none;color:var(--text);font-family:var(--mono);font-size:.85rem;}
+  .brand{font-family:var(--mono);font-size:.72rem;letter-spacing:.14em;color:var(--accent);text-transform:uppercase;margin-bottom:4px;}
+  .brand-title{font-family:var(--mono);font-weight:700;font-size:1.18rem;color:var(--text);margin:0 0 2px;}
+  .brand-sub{color:var(--text-dim);font-size:.83rem;margin-bottom:6px;}
+  .brand-prof{color:var(--accent-2);font-size:.78rem;margin-bottom:20px;font-family:var(--mono);}
+  .search-box{width:100%;margin-bottom:20px;padding:9px 14px;background:var(--bg-elev);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:.88rem;font-family:var(--body);outline:none;transition:.15s;}
+  .search-box:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft);}
+  .search-box::placeholder{color:#5d6d8a;}
+  .toc{list-style:none;margin:0;padding:0;}
   .toc-group{margin-bottom:22px;}
-  .toc-group-label{
-    font-family:var(--font-mono);
-    font-size:.7rem;
-    letter-spacing:.1em;
-    text-transform:uppercase;
-    color:var(--text-dim);
-    margin:0 0 8px 2px;
-  }
-  .toc a{
-    display:block;
-    color:var(--text-dim);
-    text-decoration:none;
-    font-size:.9rem;
-    padding:6px 10px;
-    border-radius:7px;
-    border-left:2px solid transparent;
-    transition:.15s;
-  }
-  .toc a:hover{color:var(--text); background:rgba(255,255,255,.03);}
-  .toc a.active{color:var(--accent); border-left-color:var(--accent); background:var(--accent-soft);}
-  .toc a.sub{font-size:.83rem; padding-left:20px; color:#6d7fa3;}
-
-  /* Main content */
-  main{padding:56px 48px 120px; max-width:880px;}
-  @media (max-width: 640px){ main{padding:36px 20px 90px;} }
-
+  .toc-group-label{font-family:var(--mono);font-size:.7rem;letter-spacing:.1em;text-transform:uppercase;color:var(--text-dim);margin:0 0 8px 2px;}
+  .toc a{display:block;color:var(--text-dim);text-decoration:none;font-size:.9rem;padding:6px 10px;border-radius:7px;border-left:2px solid transparent;transition:.15s;}
+  .toc a:hover{color:var(--text);background:rgba(255,255,255,.03);}
+  .toc a.active{color:var(--accent);border-left-color:var(--accent);background:var(--accent-soft);}
+  .toc a.sub{font-size:.83rem;padding-left:20px;color:#6d7fa3;}
+  main{padding:56px 48px 120px;max-width:880px;}
+  @media(max-width:640px){main{padding:36px 20px 90px;}}
   .hero{margin-bottom:64px;}
-  .hero .eyebrow{
-    font-family:var(--font-mono);
-    color:var(--accent-2);
-    font-size:.78rem;
-    letter-spacing:.14em;
-    text-transform:uppercase;
-    margin-bottom:14px;
-  }
-  .hero h1{
-    font-family:var(--font-mono);
-    font-size:clamp(1.8rem, 4vw, 2.6rem);
-    line-height:1.15;
-    margin:0 0 18px;
-    font-weight:700;
-  }
-  .hero p{color:var(--text-dim); font-size:1.05rem; max-width:60ch;}
-
-  section{margin-bottom:70px; scroll-margin-top:24px;}
-  h2{
-    font-family:var(--font-mono);
-    font-size:1.5rem;
-    border-bottom:1px solid var(--border);
-    padding-bottom:14px;
-    margin:0 0 26px;
-    display:flex;
-    align-items:baseline;
-    gap:12px;
-  }
-  h2 .tag{
-    font-size:.62rem;
-    background:var(--accent-2-soft);
-    color:var(--accent-2);
-    padding:3px 9px;
-    border-radius:99px;
-    letter-spacing:.08em;
-    text-transform:uppercase;
-    font-family:var(--font-mono);
-  }
-  h3{
-    font-family:var(--font-mono);
-    font-size:1.12rem;
-    color:var(--accent);
-    margin:36px 0 12px;
-  }
-  h4{
-    font-size:1rem;
-    margin:22px 0 8px;
-    color:var(--text);
-  }
-  p{margin:0 0 14px; color:#c6d0e2;}
-  ul, ol{margin:0 0 16px; padding-left:22px; color:#c6d0e2;}
+  .hero .eyebrow{font-family:var(--mono);color:var(--accent-2);font-size:.78rem;letter-spacing:.14em;text-transform:uppercase;margin-bottom:14px;}
+  .hero h1{font-family:var(--mono);font-size:clamp(1.8rem,4vw,2.6rem);line-height:1.15;margin:0 0 18px;font-weight:700;}
+  .hero p{color:var(--text-dim);font-size:1.05rem;max-width:60ch;}
+  section{margin-bottom:70px;scroll-margin-top:24px;}
+  h2{font-family:var(--mono);font-size:1.5rem;border-bottom:1px solid var(--border);padding-bottom:14px;margin:0 0 26px;display:flex;align-items:baseline;gap:12px;}
+  h2 .tag{font-size:.62rem;background:var(--accent-2-soft);color:var(--accent-2);padding:3px 9px;border-radius:99px;letter-spacing:.08em;text-transform:uppercase;font-family:var(--mono);}
+  h3{font-family:var(--mono);font-size:1.12rem;color:var(--accent);margin:36px 0 12px;}
+  h4{font-size:1rem;margin:22px 0 8px;color:var(--text);}
+  p{margin:0 0 14px;color:#c6d0e2;}
+  ul,ol{margin:0 0 16px;padding-left:22px;color:#c6d0e2;}
   li{margin-bottom:6px;}
   strong{color:var(--text);}
-
-  .card{
-    background:var(--bg-panel);
-    border:1px solid var(--border);
-    border-radius:var(--radius);
-    padding:20px 22px;
-    margin:18px 0;
-  }
-  .note{
-    border-left:3px solid var(--accent-2);
-    background:var(--accent-2-soft);
-    padding:14px 18px;
-    border-radius:0 8px 8px 0;
-    margin:18px 0;
-    font-size:.94rem;
-  }
+  .card{background:var(--bg-panel);border:1px solid var(--border);border-radius:var(--radius);padding:20px 22px;margin:18px 0;}
+  .note{border-left:3px solid var(--accent-2);background:var(--accent-2-soft);padding:14px 18px;border-radius:0 8px 8px 0;margin:18px 0;font-size:.94rem;}
   .note strong{color:var(--accent-2);}
-
-  code, .schema{
-    font-family:var(--font-mono);
-    font-size:.88em;
-    background:var(--bg-elev);
-    padding:2px 6px;
-    border-radius:5px;
-    color:#cfe9e2;
-  }
-  pre.schema-block{
-    font-family:var(--font-mono);
-    background:var(--bg-elev);
-    border:1px solid var(--border);
-    border-radius:8px;
-    padding:16px 18px;
-    overflow-x:auto;
-    font-size:.87rem;
-    color:#d8e3ef;
-    line-height:1.7;
-    margin:14px 0;
-  }
-  .pk{color:var(--accent-2); font-weight:600; text-decoration:underline; text-decoration-color:rgba(240,168,87,.5);}
-  .fk{color:var(--accent); font-weight:600;}
-
-  table{width:100%; border-collapse:collapse; margin:16px 0; font-size:.9rem;}
-  th, td{text-align:left; padding:9px 12px; border-bottom:1px solid var(--border);}
-  th{color:var(--accent); font-family:var(--font-mono); font-size:.78rem; text-transform:uppercase; letter-spacing:.04em;}
+  code,.schema{font-family:var(--mono);font-size:.88em;background:var(--bg-elev);padding:2px 6px;border-radius:5px;color:#cfe9e2;}
+  pre.schema-block{font-family:var(--mono);background:var(--bg-elev);border:1px solid var(--border);border-radius:8px;padding:16px 18px;overflow-x:auto;font-size:.87rem;color:#d8e3ef;line-height:1.7;margin:14px 0;}
+  .pk{color:var(--accent-2);font-weight:600;text-decoration:underline;text-decoration-color:rgba(240,168,87,.5);}
+  .fk{color:var(--accent);font-weight:600;}
+  table{width:100%;border-collapse:collapse;margin:16px 0;font-size:.9rem;}
+  th,td{text-align:left;padding:9px 12px;border-bottom:1px solid var(--border);}
+  th{color:var(--accent);font-family:var(--mono);font-size:.78rem;text-transform:uppercase;letter-spacing:.04em;}
   td{color:#c6d0e2;}
   tr:hover td{background:rgba(255,255,255,.02);}
-
-  /* Normalization stepper - signature element */
-  .stepper{
-    background:var(--bg-panel);
-    border:1px solid var(--border);
-    border-radius:14px;
-    padding:26px 26px 30px;
-    margin:26px 0 32px;
-  }
-  .stepper-tabs{
-    display:flex; gap:8px; flex-wrap:wrap;
-    margin-bottom:22px;
-  }
-  .stepper-tab{
-    font-family:var(--font-mono);
-    font-size:.82rem;
-    background:transparent;
-    border:1px solid var(--border);
-    color:var(--text-dim);
-    padding:8px 16px;
-    border-radius:99px;
-    cursor:pointer;
-    transition:.15s;
-  }
-  .stepper-tab:hover{color:var(--text); border-color:#3a4a6b;}
-  .stepper-tab.active{
-    background:var(--accent);
-    color:#0b1220;
-    border-color:var(--accent);
-    font-weight:600;
-  }
+  .stepper{background:var(--bg-panel);border:1px solid var(--border);border-radius:14px;padding:26px 26px 30px;margin:26px 0 32px;}
+  .stepper-tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:22px;}
+  .stepper-tab{font-family:var(--mono);font-size:.82rem;background:transparent;border:1px solid var(--border);color:var(--text-dim);padding:8px 16px;border-radius:99px;cursor:pointer;transition:.15s;}
+  .stepper-tab:hover{color:var(--text);border-color:#3a4a6b;}
+  .stepper-tab.active{background:var(--accent);color:#0b1220;border-color:var(--accent);font-weight:600;}
   .stepper-body{min-height:150px;}
-  .stepper-desc{color:var(--text-dim); font-size:.92rem; margin-bottom:16px;}
-  .stepper-tables{display:flex; flex-wrap:wrap; gap:14px;}
-  .mini-table{
-    background:var(--bg-elev);
-    border:1px solid var(--border);
-    border-radius:8px;
-    padding:12px 14px;
-    font-family:var(--font-mono);
-    font-size:.82rem;
-    min-width:220px;
-  }
-  .mini-table .tname{color:var(--accent); font-weight:700; margin-bottom:6px; display:block;}
-  .mini-table .fields span{display:inline-block; margin:2px 4px 2px 0;}
-
-  .back-top{
-    position:fixed; right:28px; bottom:28px;
-    background:var(--accent); color:#0b1220;
-    width:42px; height:42px; border-radius:50%;
-    display:flex; align-items:center; justify-content:center;
-    text-decoration:none; font-weight:700;
-    box-shadow:0 6px 20px rgba(0,0,0,.4);
-    opacity:0; pointer-events:none; transition:.2s;
-  }
-  .back-top.show{opacity:1; pointer-events:auto;}
-
-  footer{
-    border-top:1px solid var(--border);
-    padding-top:24px;
-    color:var(--text-dim);
-    font-size:.85rem;
-  }
-  .refs{list-style:none; padding:0; margin:0;}
-  .refs li{
-    padding:10px 0;
-    border-bottom:1px solid var(--border);
-    color:var(--text-dim);
-    font-size:.9rem;
-  }
+  .stepper-desc{color:var(--text-dim);font-size:.92rem;margin-bottom:16px;}
+  .stepper-tables{display:flex;flex-wrap:wrap;gap:14px;}
+  .mini-table{background:var(--bg-elev);border:1px solid var(--border);border-radius:8px;padding:12px 14px;font-family:var(--mono);font-size:.82rem;min-width:220px;}
+  .mini-table .tname{color:var(--accent);font-weight:700;margin-bottom:6px;display:block;}
+  .mini-table .fields span{display:inline-block;margin:2px 4px 2px 0;}
+  .exercise{background:var(--bg-panel);border:1px solid var(--border);border-left:3px solid var(--accent);border-radius:0 8px 8px 0;padding:16px 20px;margin:14px 0;}
+  .exercise .exnum{font-family:var(--mono);color:var(--accent);font-size:.78rem;letter-spacing:.06em;text-transform:uppercase;margin-bottom:6px;display:block;}
+  .tools-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;margin:20px 0;}
+  .tool-card{background:var(--bg-panel);border:1px solid var(--border);border-radius:10px;padding:18px;transition:.15s;}
+  .tool-card:hover{border-color:var(--accent);}
+  .tool-card h4{margin:0 0 6px;color:var(--accent);font-family:var(--mono);font-size:.92rem;}
+  .tool-card p{margin:0;font-size:.85rem;color:var(--text-dim);}
+  .tool-card a{font-size:.82rem;}
+  .back-top{position:fixed;right:28px;bottom:28px;background:var(--accent);color:#0b1220;width:42px;height:42px;border-radius:50%;display:flex;align-items:center;justify-content:center;text-decoration:none;font-weight:700;box-shadow:0 6px 20px rgba(0,0,0,.4);opacity:0;pointer-events:none;transition:.2s;z-index:100;}
+  .back-top.show{opacity:1;pointer-events:auto;}
+  footer{border-top:1px solid var(--border);padding-top:24px;color:var(--text-dim);font-size:.85rem;}
+  .refs{list-style:none;padding:0;margin:0;}
+  .refs li{padding:10px 0;border-bottom:1px solid var(--border);color:var(--text-dim);font-size:.9rem;}
   .refs li:last-child{border-bottom:none;}
-
-  .exercise{
-    background:var(--bg-panel);
-    border:1px solid var(--border);
-    border-left:3px solid var(--accent);
-    border-radius:0 8px 8px 0;
-    padding:16px 20px;
-    margin:14px 0;
-  }
-  .exercise .exnum{
-    font-family:var(--font-mono);
-    color:var(--accent);
-    font-size:.78rem;
-    letter-spacing:.06em;
-    text-transform:uppercase;
-    margin-bottom:6px;
-    display:block;
-  }
-
-  @media (prefers-reduced-motion: reduce){
-    html{scroll-behavior:auto;}
-    *{transition:none !important;}
-  }
+  @media print{.sidebar,.back-top,.search-box,.sidebar-toggle{display:none!important;}.shell{display:block;}body{background:white;color:black;font-size:11pt;}pre,code{background:#f5f5f5;color:black;border:1px solid #ccc;}.note,.card,.exercise,.stepper{border:1px solid #999;background:#f9f9f9;}a{color:black;text-decoration:none;}}
+  @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto;}*{transition:none!important;}}
 </style>
 </head>
 <body>
-
 <div class="shell">
-  <nav class="sidebar" id="sidebar">
-    <div class="brand">Banco de Dados II</div>
+  <nav class="sidebar" aria-label="Navegação do guia">
+    <button class="sidebar-toggle" onclick="document.querySelector('.toc').classList.toggle('open')" aria-label="Abrir/fechar índice">
+      <span>☰ Índice</span>
+    </button>
+    <div class="brand">SENAI · Banco de Dados</div>
     <div class="brand-title">Guia de Consulta</div>
-    <div class="brand-sub">Referência das aulas — normalização e SQL</div>
-
+    <div class="brand-sub">Conceitos · Normalização · SQL</div>
+    <div class="brand-prof">Prof. Josimar Menegatt</div>
+    <input type="text" class="search-box" id="search" placeholder="🔍 Buscar no guia..." aria-label="Buscar conteúdo">
     <ul class="toc">
       <li class="toc-group">
-        <div class="toc-group-label">Aula 01</div>
-        <a href="#introducao">Conceitos básicos</a>
+        <div class="toc-group-label">Aula 01 · Conceitos</div>
+        <a href="#introducao">O que é banco de dados</a>
+        <a class="sub" href="#bd-everywhere">BD está em todo lugar</a>
+        <a class="sub" href="#bd-vs-manual">Informatizado vs. manual</a>
+        <a class="sub" href="#sgbd">SGBD e exemplos modernos</a>
+        <a class="sub" href="#modelos">Modelos de banco de dados</a>
+        <a class="sub" href="#sql-sub">SQL e sub-linguagens</a>
+        <a class="sub" href="#modelo-relacional">Entidade, atributo, registro</a>
+        <a class="sub" href="#create-table">CREATE TABLE no MySQL</a>
+        <a class="sub" href="#chave-primaria">Chave primária (PK)</a>
+        <a class="sub" href="#chave-estrangeira">Chave estrangeira (FK)</a>
+        <a class="sub" href="#relacionamentos">Relacionamentos 1:1, 1:N, N:M</a>
+        <a class="sub" href="#exemplo-completo">Exemplo: sistema de pedidos</a>
+        <a class="sub" href="#tipos-mysql">Tipos de dados MySQL</a>
+        <a class="sub" href="#integridade">Integridade de dados</a>
+        <a class="sub" href="#crud">CRUD — INSERT, SELECT, UPDATE, DELETE</a>
+        <a class="sub" href="#nosql">NoSQL — visão geral</a>
       </li>
       <li class="toc-group">
         <div class="toc-group-label">Aula 02 · Normalização</div>
@@ -324,16 +150,16 @@
         <a class="sub" href="#stepper">Passo a passo interativo</a>
       </li>
       <li class="toc-group">
-        <div class="toc-group-label">Aula 03 · SQL</div>
+        <div class="toc-group-label">Aula 03 · SQL (MySQL)</div>
         <a href="#sql-historico">Histórico e composição</a>
-        <a class="sub" href="#sql-tipos">Tipos de dados</a>
-        <a class="sub" href="#sql-ddl">DDL — criar e alterar tabelas</a>
+        <a class="sub" href="#sql-ddl">DDL — criar e alterar</a>
         <a class="sub" href="#sql-chaves">Chaves e integridade</a>
         <a class="sub" href="#sql-exemplo">Exemplo: sistema bancário</a>
       </li>
       <li class="toc-group">
         <div class="toc-group-label">Prática</div>
         <a href="#exercicios">Exercícios de fixação</a>
+        <a href="#ferramentas">Ferramentas online</a>
         <a href="#referencias">Referências</a>
       </li>
     </ul>
@@ -342,138 +168,268 @@
   <main>
     <div class="hero">
       <div class="eyebrow">Aprendizagem Industrial · Banco de Dados</div>
-      <h1>Banco de Dados II<br>Normalização &amp; SQL</h1>
-      <p>Material de consulta rápida reunindo o conteúdo das aulas de introdução a bancos de dados, o processo de normalização (1ª à 5ª forma normal) e os fundamentos da linguagem SQL.</p>
+      <h1>Banco de Dados<br>Conceitos · Normalização · SQL</h1>
+      <p>Material de consulta rápida com o conteúdo das aulas de introdução a bancos de dados, normalização (1ª à 5ª FN) e fundamentos da linguagem SQL com foco em <strong>MySQL</strong>.</p>
     </div>
 
-    <!-- ================= AULA 1 ================= -->
+    <!-- ===== AULA 01 — AGORA COMPLETA ===== -->
     <section id="introducao">
       <h2>Conceitos básicos de banco de dados <span class="tag">Aula 01</span></h2>
+      <p>Um banco de dados é uma coleção organizada de informações relacionadas entre si, guardadas segundo um padrão que permite localizá-las e manipulá-las com facilidade. Quando informatizado, ganhamos rapidez de acesso, compartilhamento entre vários usuários, regras de integridade e padronização.</p>
 
-      <p>Um banco de dados é uma coleção organizada de informações relacionadas entre si, guardadas segundo um padrão que permite localizá-las e manipulá-las com facilidade. Quando esse banco é informatizado, ganhamos rapidez de acesso, compartilhamento entre vários usuários, regras de integridade e padronização — vantagens que uma agenda de papel ou uma lista solta não oferecem.</p>
+      <h3 id="bd-everywhere">Banco de dados está em todo lugar</h3>
+      <div class="card">
+        <table>
+          <tr><th>Aplicação</th><th>O que o banco armazena</th></tr>
+          <tr><td>Instagram</td><td>Fotos, curtidas, comentários, seguidores</td></tr>
+          <tr><td>Netflix</td><td>Catálogo, histórico, recomendações</td></tr>
+          <tr><td>iFood</td><td>Restaurantes, pedidos, entregadores</td></tr>
+          <tr><td>WhatsApp</td><td>Mensagens, contatos, grupos</td></tr>
+          <tr><td>Pix</td><td>Transações, contas, chaves — 24/7</td></tr>
+        </table>
+        <p style="margin-bottom:0"><strong>Provocação:</strong> quantas vezes você usou um banco de dados hoje?</p>
+      </div>
 
-      <h3>Entidade, atributo e registro</h3>
-      <p>Três conceitos formam a base de qualquer modelo relacional:</p>
+      <h3 id="bd-vs-manual">BD informatizado vs. manual</h3>
+      <div class="card">
+        <p><strong>Rapidez</strong> — milhões de registros em milissegundos via SQL otimizadas.</p>
+        <p><strong>Multi-usuário</strong> — acesso simultâneo com controle de concorrência.</p>
+        <p><strong>Segurança</strong> — permissões por perfil, criptografia, auditoria.</p>
+        <p><strong>Integridade</strong> — regras automáticas contra dados inválidos.</p>
+        <p><strong>Escalabilidade</strong> — cresce com o volume de dados.</p>
+        <p style="margin-bottom:0"><strong>Padronização</strong> — regras centralizadas.</p>
+      </div>
+
+      <h3 id="sgbd">SGBD — Sistema de Gerenciamento de Banco de Dados</h3>
+      <p>O SGBD é o <strong>software</strong> que gerencia o banco de dados. Banco de dados é o conjunto de dados; SGBD é o sistema que o gerencia. <strong>São conceitos diferentes!</strong></p>
       <table>
-        <tr><th>Termo formal</th><th>Equivalente prático</th><th>Exemplo</th></tr>
-        <tr><td>Entidade</td><td>Tabela</td><td>Telefones, Compromissos</td></tr>
-        <tr><td>Atributo</td><td>Campo / coluna</td><td>Nome, telefone, endereço</td></tr>
-        <tr><td>Registro</td><td>Tupla / linha</td><td>Um contato específico da agenda</td></tr>
+        <tr><th>SGBD</th><th>Tipo</th><th>Uso típico</th></tr>
+        <tr><td>MySQL</td><td>Relacional</td><td>Web, ensino — referência deste guia</td></tr>
+        <tr><td>PostgreSQL</td><td>Relacional</td><td>Sistemas robustos, suporte a JSON</td></tr>
+        <tr><td>SQL Server</td><td>Relacional</td><td>Ambientes corporativos Microsoft</td></tr>
+        <tr><td>Oracle</td><td>Relacional</td><td>Grandes corporações</td></tr>
+        <tr><td>MongoDB</td><td>NoSQL</td><td>Documentos, escala horizontal</td></tr>
+        <tr><td>Redis</td><td>NoSQL</td><td>Cache, sessões — ultra-rápido</td></tr>
       </table>
 
-      <h3>Chave primária</h3>
-      <p>É o campo (ou conjunto de campos) que identifica cada registro de forma única dentro da tabela. Seu valor nunca se repete e nunca pode ficar em branco. Mais adiante, na aula de SQL, vemos como isso é garantido na prática com <code>primary key</code>.</p>
+      <h3 id="modelos">Modelos de banco de dados</h3>
+      <p>Ao longo da história, diferentes modelos foram propostos. Hoje, o <strong>modelo relacional</strong> é o mais utilizado na indústria, mas os modelos <strong>NoSQL</strong> vêm ganhando espaço.</p>
+      <div class="note"><strong>Foco deste guia:</strong> Modelo Relacional — utilizado pelo MySQL, PostgreSQL, SQL Server e Oracle. É o modelo exigido no mercado para a maioria dos sistemas transacionais.</div>
 
-      <h3>Tipos de relacionamento</h3>
-      <ul>
-        <li><strong>Um-para-um:</strong> pouco comum — ex.: um funcionário e o armário exclusivo dele.</li>
-        <li><strong>Um-para-muitos:</strong> o mais frequente — ex.: um cliente pode fazer vários pedidos.</li>
-        <li><strong>Muitos-para-muitos:</strong> sempre resolvido com uma tabela intermediária, decompondo a relação em dois vínculos um-para-muitos.</li>
-      </ul>
+      <h3 id="sql-sub">SQL — Structured Query Language</h3>
+      <p>SQL é a linguagem padrão para comunicação com bancos de dados relacionais. Divide-se em sub-linguagens:</p>
+      <table>
+        <tr><th>Sigla</th><th>Significado</th><th>Comandos</th><th>Função</th></tr>
+        <tr><td>DDL</td><td>Data Definition Language</td><td><code>CREATE</code>, <code>ALTER</code>, <code>DROP</code></td><td>Define a estrutura do banco</td></tr>
+        <tr><td>DML</td><td>Data Manipulation Language</td><td><code>INSERT</code>, <code>UPDATE</code>, <code>DELETE</code></td><td>Manipula os dados nas tabelas</td></tr>
+        <tr><td>DQL</td><td>Data Query Language</td><td><code>SELECT</code></td><td>Consulta e recupera dados</td></tr>
+        <tr><td>DCL</td><td>Data Control Language</td><td><code>GRANT</code>, <code>REVOKE</code></td><td>Controla permissões de acesso</td></tr>
+        <tr><td>DTL</td><td>Data Transaction Language</td><td><code>COMMIT</code>, <code>ROLLBACK</code></td><td>Gerencia transações e consistência</td></tr>
+      </table>
 
-      <h3>Variações de chave</h3>
-      <ul>
-        <li><strong>Simples:</strong> um único campo.</li>
-        <li><strong>Composta:</strong> mais de um campo (ex.: agência + número da conta).</li>
-        <li><strong>Única:</strong> não se repete, mas pode ficar em branco.</li>
-        <li><strong>Estrangeira:</strong> a chave primária de outra tabela, usada para representar o relacionamento.</li>
-      </ul>
+      <h3 id="modelo-relacional">Entidade, atributo e registro</h3>
+      <table>
+        <tr><th>Termo formal</th><th>Equivalente prático</th><th>Exemplo</th></tr>
+        <tr><td>Entidade</td><td>Tabela</td><td>alunos</td></tr>
+        <tr><td>Atributo</td><td>Campo / coluna</td><td>nome, email, curso</td></tr>
+        <tr><td>Registro</td><td>Tupla / linha</td><td>Um aluno específico</td></tr>
+      </table>
 
-      <h3>Integridade de dados</h3>
-      <div class="card">
-        <p><strong>Integridade de domínio</strong> — controla os valores aceitos em um campo (faixa permitida, impedir datas futuras, não deixar em branco). É garantida na própria construção da tabela.</p>
-        <p><strong>Integridade de entidade</strong> — evita registros inconsistentes entre si, como duas pessoas com o mesmo RG. É garantida por campos-chave e/ou programação.</p>
-        <p style="margin-bottom:0"><strong>Integridade referencial</strong> — impede inconsistência entre tabelas relacionadas: um registro "filho" só existe se o "pai" correspondente existir, e um "pai" só pode ser excluído se não houver "filhos" dependentes dele.</p>
+      <h3 id="create-table">Criando a tabela <code>alunos</code> no MySQL</h3>
+      <pre class="schema-block">CREATE TABLE alunos (
+    id              INT AUTO_INCREMENT PRIMARY KEY,  -- Identificador único
+    nome            VARCHAR(100) NOT NULL,            -- Obrigatório, até 100 caracteres
+    email           VARCHAR(150) NOT NULL UNIQUE,     -- Obrigatório e único
+    data_nascimento DATE,                            -- Formato AAAA-MM-DD
+    curso           VARCHAR(50)  NOT NULL             -- Nome do curso técnico
+);</pre>
+      <div class="note">
+        <strong>Pontos de atenção:</strong>
+        <code>AUTO_INCREMENT</code> gera o <code>id</code> automaticamente ·
+        <code>PRIMARY KEY</code> garante unicidade e não-nulo ·
+        <code>NOT NULL</code> impede campos vazios ·
+        <code>UNIQUE</code> impede e-mails duplicados.
       </div>
-    </section>
 
-    <!-- ================= AULA 2 - NORMALIZAÇÃO ================= -->
+      <h3 id="chave-primaria">Chave primária (PK)</h3>
+      <p>Campo que identifica cada registro de forma <strong>única</strong>. Nunca se repete, nunca é nulo.</p>
+      <pre class="schema-block">-- Chave primária simples (mais comum)
+id INT AUTO_INCREMENT PRIMARY KEY
+
+-- Chave primária composta (tabelas associativas)
+PRIMARY KEY (aluno_id, disciplina_id)</pre>
+      <p><strong>Variações:</strong> <em>simples</em> (um campo), <em>composta</em> (ex.: agência + conta), <em>única</em> (não repete, mas pode ser nula), <em>estrangeira</em> (PK de outra tabela).</p>
+
+      <h3 id="chave-estrangeira">Chave estrangeira (FK)</h3>
+      <p>Campo que referencia a PK de outra tabela, criando um relacionamento. Garante a <strong>integridade referencial</strong>: não é possível inserir um valor na FK que não exista na PK referenciada.</p>
+      <pre class="schema-block">CREATE TABLE matriculas (
+    id          INT AUTO_INCREMENT PRIMARY KEY,
+    aluno_id    INT NOT NULL,
+    disciplina  VARCHAR(100) NOT NULL,
+    ano         YEAR NOT NULL,
+    FOREIGN KEY (aluno_id) REFERENCES alunos(id)
+        ON DELETE CASCADE ON UPDATE CASCADE
+);</pre>
+      <div class="note"><strong>No MySQL</strong> a FK exige indicar a coluna referenciada: <code>FOREIGN KEY (aluno_id) REFERENCES alunos(id)</code>.</div>
+
+      <h3 id="relacionamentos">Relacionamentos entre tabelas</h3>
+      <ul>
+        <li><strong>1:1 — Um-para-um:</strong> pouco comum (ex.: Pessoa ↔ CPF).</li>
+        <li><strong>1:N — Um-para-muitos:</strong> o mais frequente (ex.: Cliente → Pedidos).</li>
+        <li><strong>N:M — Muitos-para-muitos:</strong> exige tabela associativa intermediária (ex.: Pedido ↔ Produto via <code>item_pedido</code>).</li>
+      </ul>
+
+      <h3 id="exemplo-completo">Exemplo completo: sistema de pedidos</h3>
+      <pre class="schema-block">CREATE TABLE clientes (
+    id    INT AUTO_INCREMENT PRIMARY KEY,
+    nome  VARCHAR(100) NOT NULL,
+    email VARCHAR(150) UNIQUE
+);
+CREATE TABLE produtos (
+    id    INT AUTO_INCREMENT PRIMARY KEY,
+    nome  VARCHAR(100) NOT NULL,
+    preco DECIMAL(10,2) NOT NULL
+);
+CREATE TABLE pedidos (
+    id          INT AUTO_INCREMENT PRIMARY KEY,
+    cliente_id  INT NOT NULL,
+    data_pedido DATE NOT NULL,
+    FOREIGN KEY (cliente_id) REFERENCES clientes(id)
+);
+CREATE TABLE item_pedido (
+    pedido_id   INT NOT NULL,
+    produto_id  INT NOT NULL,
+    quantidade  INT NOT NULL DEFAULT 1,
+    PRIMARY KEY (pedido_id, produto_id),
+    FOREIGN KEY (pedido_id)  REFERENCES pedidos(id),
+    FOREIGN KEY (produto_id) REFERENCES produtos(id)
+);</pre>
+      <p><code>item_pedido</code> é a tabela associativa que resolve a relação N:M. Sua PK é composta pelos dois IDs estrangeiros. Note <code>quantidade INT NOT NULL DEFAULT 1</code> — se não informado, o MySQL usa automaticamente o valor 1.</p>
+
+      <h3 id="tipos-mysql">Tipos de dados no MySQL</h3>
+      <table>
+        <tr><th>Tipo</th><th>Categoria</th><th>Quando usar</th></tr>
+        <tr><td><code>INT</code> / <code>BIGINT</code></td><td>Inteiro</td><td>IDs, contadores, quantidades</td></tr>
+        <tr><td><code>DECIMAL(p,s)</code></td><td>Decimal</td><td>Valores monetários (ex.: <code>DECIMAL(10,2)</code>)</td></tr>
+        <tr><td><code>VARCHAR(n)</code></td><td>Texto variável</td><td>Nomes, e-mails, títulos</td></tr>
+        <tr><td><code>TEXT</code></td><td>Texto longo</td><td>Descrições (até 65.535 caracteres)</td></tr>
+        <tr><td><code>DATE</code> / <code>DATETIME</code></td><td>Data/Hora</td><td><code>DATE</code> = só data; <code>DATETIME</code> = data + hora</td></tr>
+        <tr><td><code>TIMESTAMP</code></td><td>Data/Hora</td><td>Criação/atualização automática</td></tr>
+        <tr><td><code>BOOLEAN</code></td><td>Lógico</td><td><code>TINYINT(1)</code>: 0 (false) ou 1 (true)</td></tr>
+        <tr><td><code>JSON</code></td><td>Documento</td><td>Dados semi-estruturados, configurações</td></tr>
+        <tr><td><code>ENUM</code></td><td>Enumerado</td><td>Lista fixa (ex.: <code>ENUM('ativo','inativo')</code>)</td></tr>
+        <tr><td><code>BLOB</code></td><td>Binário</td><td>Arquivos (preferir sistema de arquivos)</td></tr>
+      </table>
+
+      <h3 id="integridade">Integridade de dados</h3>
+      <div class="card">
+        <p><strong>Integridade de domínio</strong> — valores válidos por coluna: <code>NOT NULL</code>, <code>CHECK</code>, <code>DEFAULT</code>, <code>ENUM</code>.</p>
+        <p><strong>Integridade de entidade</strong> — unicidade garantida pela <code>PRIMARY KEY</code>; nenhum NULL permitido.</p>
+        <p style="margin-bottom:0"><strong>Integridade referencial</strong> — FK deve existir na tabela referenciada; <code>ON DELETE RESTRICT</code> / <code>CASCADE</code> controlam exclusões.</p>
+      </div>
+      <pre class="schema-block">-- Exemplo de constraint CHECK no MySQL 8.0+
+ALTER TABLE alunos
+    ADD CONSTRAINT chk_nome CHECK (CHAR_LENGTH(nome) >= 3);</pre>
+
+      <h3 id="crud">CRUD — INSERT, SELECT, UPDATE, DELETE</h3>
+      <pre class="schema-block">-- INSERT: inserir
+INSERT INTO alunos (nome, email, curso)
+VALUES ('Ana Silva', 'ana@email.com', 'Informática');
+
+-- SELECT: consultar
+SELECT id, nome, curso FROM alunos
+WHERE curso = 'Informática' ORDER BY nome ASC;
+
+-- UPDATE: alterar
+UPDATE alunos SET email = 'ana.silva@senai.com' WHERE id = 1;
+
+-- DELETE: excluir
+DELETE FROM alunos WHERE id = 1;</pre>
+      <div class="note"><strong>Atenção:</strong> sempre use <code>WHERE</code> com <code>UPDATE</code> e <code>DELETE</code>. Sem ela, <em>todos</em> os registros serão afetados!</div>
+
+      <h3 id="nosql">NoSQL — visão geral</h3>
+      <p>Categoria de SGBDs que não segue o modelo relacional. Surgiu para demandas de Big Data e Indústria 4.0:</p>
+      <table>
+        <tr><th>Tipo</th><th>Exemplo</th><th>Ideal para</th></tr>
+        <tr><td>Documento</td><td>MongoDB</td><td>Perfis, catálogos, JSON</td></tr>
+        <tr><td>Chave-valor</td><td>Redis</td><td>Cache, sessões, filas</td></tr>
+        <tr><td>Coluna larga</td><td>Cassandra</td><td>Logs, séries temporais</td></tr>
+        <tr><td>Grafo</td><td>Neo4j</td><td>Redes sociais, recomendações</td></tr>
+      </table>
+      <div class="card">
+        <table>
+          <tr><th>Relacional</th><th>NoSQL</th></tr>
+          <tr><td>Esquema fixo</td><td>Esquema flexível</td></tr>
+          <tr><td>SQL padronizado</td><td>APIs próprias</td></tr>
+          <tr><td>Escala vertical</td><td>Escala horizontal</td></tr>
+          <tr><td>ACID garantido</td><td>BASE / eventual</td></tr>
+        </table>
+      </div>
+      <div class="note"><strong>Saber NoSQL é diferencial competitivo</strong> — não é substituto, é complemento ao SQL.</div>
+    </section>
+        <!-- ===== AULA 02 ===== -->
     <section id="normalizacao-intro">
       <h2>Normalização <span class="tag">Aula 02</span></h2>
-      <p>Normalizar é o processo formal de reorganizar os atributos de uma tabela para eliminar redundâncias, remover estruturas que não existem no modelo relacional (como atributos multivalorados) e evitar anomalias de inclusão, exclusão e alteração.</p>
-
-      <p>Pense em uma tabela única <code>EMPREGADO_DEPTO</code>, misturando dados de empregados e departamentos. Isso cria problemas típicos:</p>
+      <p>Normalizar é reorganizar os atributos de uma tabela para eliminar redundâncias, remover atributos multivalorados e evitar anomalias de inclusão, exclusão e alteração. O conceito foi formalizado por E. F. Codd a partir de 1970.</p>
+      <p>Problemas típicos de uma tabela não normalizada (<code>EMPREGADO_DEPTO</code>):</p>
       <ul>
-        <li>Para cadastrar um departamento novo, sem empregado, talvez seja preciso deixar campos de empregado em branco.</li>
-        <li>Ao excluir o único empregado de um departamento, perdemos também os dados do departamento.</li>
-        <li>Alterar o nome de um departamento exige atualizar essa informação em todas as linhas dos empregados vinculados a ele — e um esquecimento gera inconsistência.</li>
+        <li>Cadastrar departamento sem empregado → campos em branco.</li>
+        <li>Excluir o único empregado → perde-se também o departamento.</li>
+        <li>Alterar nome do departamento → atualizar em todas as linhas.</li>
       </ul>
-      <p>A normalização resolve isso decompondo a tabela em partes menores e mais coerentes, seguindo regras cada vez mais rígidas chamadas <strong>formas normais</strong> (1FN, 2FN, 3FN, e — em casos mais raros — 4FN e 5FN). O conceito foi formalizado por E. F. Codd a partir de 1970.</p>
     </section>
-
     <section id="tnn">
       <h3 style="margin-top:0">Tabela não normalizada (TÑN)</h3>
-      <p>Uma tabela é dita <strong>não normalizada</strong> quando contém uma <em>tabela aninhada</em>: uma coluna que, em vez de guardar um valor único, guarda uma lista de valores (também chamada de grupo repetido ou coluna multivalorada). É o ponto de partida antes de aplicar qualquer forma normal.</p>
       <pre class="schema-block">TÑN
 Proj(<span class="pk">CodProj</span>, Tipo, Descr,
      (<span class="pk">CodEmp</span>, Nome, Cat, Sal, DataIni, TempAl))</pre>
-      <p>Aqui, para cada projeto existe uma lista de empregados alocados — essa lista aninhada é o problema que a 1ª Forma Normal resolve.</p>
     </section>
-
     <section id="dependencia-funcional">
       <h3 style="margin-top:0">Dependência funcional</h3>
-      <p>Esse conceito é a base para entender a 2ª e a 3ª forma normal. Dizemos que uma coluna <code>Y</code> depende funcionalmente de uma coluna <code>X</code> quando, sempre que um mesmo valor de <code>X</code> aparece na tabela, o valor correspondente de <code>Y</code> é sempre o mesmo. Notação: <code>X → Y</code> ("X determina Y").</p>
-      <p><strong>Exemplo:</strong> <code>Código do Livro → Descrição</code> — dado o código, a descrição do livro é sempre a mesma. Uma dependência também pode ter mais de uma coluna como determinante: <code>(Número do Empréstimo, Código do Livro) → Quantidade</code>.</p>
-
+      <p>Uma coluna <code>Y</code> depende funcionalmente de <code>X</code> quando, sempre que <code>X</code> aparece, <code>Y</code> é o mesmo. Notação: <code>X → Y</code>.</p>
       <table>
         <tr><th>Tipo</th><th>Quando ocorre</th></tr>
-        <tr><td>Total / completa</td><td>Um atributo depende de <em>toda</em> a chave primária composta.</td></tr>
-        <tr><td>Parcial</td><td>Um atributo depende de apenas <em>parte</em> da chave primária composta.</td></tr>
-        <tr><td>Transitiva</td><td>Um atributo não-chave depende de outro atributo não-chave, que por sua vez depende da chave.</td></tr>
+        <tr><td>Total / completa</td><td>Depende de <em>toda</em> a chave composta.</td></tr>
+        <tr><td>Parcial</td><td>Depende de apenas <em>parte</em> da chave composta.</td></tr>
+        <tr><td>Transitiva</td><td>Depende de outro atributo não-chave.</td></tr>
       </table>
     </section>
-
     <section id="1fn">
       <h3 style="margin-top:0">Primeira Forma Normal (1FN)</h3>
-      <p>Uma relação está na 1FN quando todos os seus domínios contêm apenas valores atômicos — ou seja, quando ela não possui tabelas aninhadas nem colunas multivaloradas.</p>
-      <p>Existem duas formas de eliminar o aninhamento:</p>
-      <ol>
-        <li><strong>Tabela única com redundância</strong> — simples de visualizar, mas repete os dados do "pai" em cada linha do "filho".</li>
-        <li><strong>Uma tabela para cada grupo aninhado</strong> — cria uma tabela nova, cuja chave primária une a chave da tabela original com a chave do grupo repetido. É a alternativa preferida na prática, principalmente quando há vários níveis de aninhamento.</li>
-      </ol>
-      <pre class="schema-block">1FN (decomposição)
+      <p>Todos os domínios contêm apenas <strong>valores atômicos</strong> — sem tabelas aninhadas.</p>
+      <pre class="schema-block">1FN
 Proj    (<span class="pk">CodProj</span>, Tipo, Descr)
 ProjEmp (<span class="pk">CodProj</span>, <span class="pk">CodEmp</span>, Nome, Cat, Sal, DataIni, TempAl)</pre>
-      <p>Repare que <code>CodProj</code> teve de entrar na chave de <code>ProjEmp</code>: como um mesmo empregado pode aparecer em mais de um projeto, só o código do empregado não identifica a linha sozinho.</p>
     </section>
-
     <section id="2fn">
       <h3 style="margin-top:0">Segunda Forma Normal (2FN)</h3>
-      <p>Uma tabela está na 2FN quando, além de estar na 1FN, todos os atributos não-chave dependem <strong>totalmente</strong> da chave primária — isto é, não existem dependências parciais.</p>
-      <div class="note"><strong>Atalho útil:</strong> se a chave primária de uma tabela é formada por uma única coluna, ela já está automaticamente na 2FN (não há como haver dependência "parcial" de uma chave que não é composta).</div>
-      <p>Em <code>ProjEmp</code>, os atributos <code>Nome, Cat, Sal</code> dependem só de <code>CodEmp</code> (parte da chave), não do par completo <code>(CodProj, CodEmp)</code>. Isso é uma dependência parcial — o sinal de que a tabela deve ser quebrada:</p>
+      <p>Estar na 1FN <strong>e</strong> todos os atributos não-chave dependerem <strong>totalmente</strong> da PK.</p>
+      <div class="note"><strong>Atalho:</strong> se a PK é um único campo, já está na 2FN.</div>
       <pre class="schema-block">2FN
 Proj    (<span class="pk">CodProj</span>, Tipo, Descr)
 ProjEmp (<span class="pk">CodProj</span>, <span class="pk">CodEmp</span>, DataIni, TempAl)
 Emp     (<span class="pk">CodEmp</span>, Nome, Cat, Sal)</pre>
     </section>
-
     <section id="3fn">
       <h3 style="margin-top:0">Terceira Forma Normal (3FN)</h3>
-      <p>Uma tabela está na 3FN quando, além de estar na 2FN, não contém dependências <strong>transitivas</strong>: nenhum atributo não-chave depende de outro atributo não-chave.</p>
-      <p>Em <code>Emp</code>, o salário (<code>Sal</code>) é determinado pela categoria funcional (<code>Cat</code>), não diretamente por <code>CodEmp</code>. Ou seja, <code>CodEmp → Cat → Sal</code> — uma dependência transitiva. A solução é isolar essa relação em uma tabela própria:</p>
+      <p>Estar na 2FN <strong>e</strong> não conter dependências <strong>transitivas</strong>.</p>
       <pre class="schema-block">3FN
 Proj    (<span class="pk">CodProj</span>, Tipo, Descr)
 ProjEmp (<span class="pk">CodProj</span>, <span class="pk">CodEmp</span>, DataIni, TempAl)
 Emp     (<span class="pk">CodEmp</span>, Nome, Cat)
 Cat     (<span class="pk">Cat</span>, Sal)</pre>
-      <p>Para a grande maioria dos sistemas do dia a dia, decompor até a 3FN já é suficiente.</p>
     </section>
-
     <section id="4fn5fn">
-      <h3 style="margin-top:0">4ª e 5ª forma normal, e desnormalização</h3>
-      <p>Essas formas aparecem com menos frequência na prática, mas vale conhecer a ideia:</p>
+      <h3 style="margin-top:0">4FN, 5FN e desnormalização</h3>
       <ul>
-        <li><strong>Forma Normal de Boyce-Codd (FNBC):</strong> uma versão mais rigorosa da 3FN, baseada no conceito de chave candidata.</li>
-        <li><strong>4ª Forma Normal:</strong> exige estar na 3FN/FNBC e eliminar dependências multivaloradas independentes entre si — situações em que dois fatos sobre a mesma entidade não têm relação um com o outro, mas acabam misturados na mesma tabela.</li>
-        <li><strong>5ª Forma Normal:</strong> trata de casos em que uma tabela só pode ser reconstruída juntando três (ou mais) outras tabelas relacionadas entre si — uma decomposição que não pode ser feita aos pares, como na 4FN.</li>
+        <li><strong>FNBC:</strong> versão mais rigorosa da 3FN.</li>
+        <li><strong>4FN:</strong> elimina dependências multivaloradas independentes.</li>
+        <li><strong>5FN:</strong> decomposição que só pode ser reconstruída juntando 3+ tabelas.</li>
       </ul>
-      <p><strong>Desnormalização</strong> é o caminho inverso, feito de forma consciente: juntar tabelas normalizadas para melhorar o desempenho de consultas, como é comum em data warehouses, onde a leitura é mais frequente que a escrita.</p>
+      <p><strong>Desnormalização:</strong> juntar tabelas conscientemente para melhorar desempenho de leitura (comum em data warehouses).</p>
     </section>
-
     <section id="stepper">
-      <h3 style="margin-top:0">Passo a passo: decompondo Proj/Emp</h3>
-      <p class="stepper-desc" style="margin-bottom:0">Clique nas etapas para ver a mesma informação se reorganizando da tabela não normalizada até a 3ª forma normal.</p>
+      <h3 style="margin-top:0">Passo a passo: Proj → 3FN</h3>
       <div class="stepper">
         <div class="stepper-tabs">
           <button class="stepper-tab active" data-step="0">TÑN</button>
@@ -488,180 +444,294 @@ Cat     (<span class="pk">Cat</span>, Sal)</pre>
       </div>
     </section>
 
-    <!-- ================= AULA 3 - SQL ================= -->
+    <!-- ===== AULA 03 ===== -->
     <section id="sql-historico">
       <h2>Introdução à linguagem SQL <span class="tag">Aula 03</span></h2>
-      <p>O modelo relacional que fundamenta a normalização foi proposto por E. F. Codd em 1970, no artigo <em>"A Relational Model of Data for Large Shared Data Banks"</em>. A partir dele, a IBM desenvolveu a SEQUEL (Structured English Query Language) para o protótipo System R, no início dos anos 1970 — origem do nome SQL (Structured Query Language). A primeira implementação comercial coube à empresa hoje conhecida como Oracle Corporation. O ANSI publicou o primeiro padrão em 1986; versões posteriores ficaram conhecidas como SQL-92 e SQL:1999.</p>
-
-      <p>SQL é dividido em três grandes grupos de comandos:</p>
+      <p>O modelo relacional foi proposto por E. F. Codd em 1970. A IBM criou a SEQUEL (depois SQL). O padrão ANSI saiu em 1986.</p>
       <table>
-        <tr><th>Sigla</th><th>Significado</th><th>Função</th><th>Exemplos</th></tr>
-        <tr><td>DDL</td><td>Data Definition Language</td><td>Define a estrutura do banco</td><td><code>create</code>, <code>alter</code>, <code>drop</code></td></tr>
-        <tr><td>DML</td><td>Data Manipulation Language</td><td>Consulta e manipula registros</td><td><code>select</code>, <code>insert</code>, <code>update</code>, <code>delete</code></td></tr>
-        <tr><td>DCL</td><td>Data Control Language</td><td>Controla permissões de acesso</td><td><code>grant</code>, <code>revoke</code></td></tr>
+        <tr><th>Sigla</th><th>Significado</th><th>Comandos</th></tr>
+        <tr><td>DDL</td><td>Data Definition Language</td><td><code>CREATE</code>, <code>ALTER</code>, <code>DROP</code></td></tr>
+        <tr><td>DML</td><td>Data Manipulation Language</td><td><code>INSERT</code>, <code>UPDATE</code>, <code>DELETE</code></td></tr>
+        <tr><td>DQL</td><td>Data Query Language</td><td><code>SELECT</code></td></tr>
+        <tr><td>DCL</td><td>Data Control Language</td><td><code>GRANT</code>, <code>REVOKE</code></td></tr>
+        <tr><td>DTL</td><td>Data Transaction Language</td><td><code>COMMIT</code>, <code>ROLLBACK</code></td></tr>
       </table>
-      <p>Duas características costumam ser destacadas: o gerenciamento automático de índices (sem precisar navegar registro a registro, como nas linguagens de manipulação de arquivos mais antigas) e o suporte a <em>views</em>, além dos comandos <code>commit</code> e <code>rollback</code> para confirmar ou desfazer um conjunto de alterações feito dentro de uma transação.</p>
     </section>
-
-    <section id="sql-tipos">
-      <h3 style="margin-top:0">Tipos de domínio (dados)</h3>
-      <table>
-        <tr><th>Tipo</th><th>Uso</th></tr>
-        <tr><td><code>char(n)</code></td><td>Texto de tamanho fixo</td></tr>
-        <tr><td><code>varchar(n)</code></td><td>Texto de tamanho variável, até o máximo n</td></tr>
-        <tr><td><code>int</code> / <code>smallint</code></td><td>Números inteiros (o segundo, de faixa menor)</td></tr>
-        <tr><td><code>numeric(p,d)</code></td><td>Número com p dígitos, sendo d após o ponto decimal</td></tr>
-        <tr><td><code>real</code> / <code>double precision</code></td><td>Ponto flutuante, com precisão simples ou dupla</td></tr>
-        <tr><td><code>date</code> / <code>time</code></td><td>Data (ano, mês, dia) e hora</td></tr>
-      </table>
-      <p>Valores nulos são permitidos por padrão em qualquer domínio; a cláusula <code>not null</code> proíbe que o campo fique em branco.</p>
-    </section>
-
     <section id="sql-ddl">
-      <h3 style="margin-top:0">DDL — criando e alterando tabelas</h3>
-      <p>O comando básico de criação segue este formato:</p>
-      <pre class="schema-block">create table r (
-  A1 D1,
-  A2 D2,
-  ...,
-  An Dn,
-  &lt;restrições de integridade&gt;
-)</pre>
-      <p>Exemplo prático (a sintaxe do tipo monetário varia entre bancos):</p>
-      <pre class="schema-block">-- Oracle
-create table Agencia (
-  agencia_nome char(20) not null,
-  agencia_cidade varchar(30),
-  ativos integer
-)
+      <h3 style="margin-top:0">DDL — criar e alterar tabelas</h3>
+      <pre class="schema-block">-- MySQL
+CREATE TABLE Agencia (
+    agencia_nome  VARCHAR(20) NOT NULL,
+    agencia_cidade VARCHAR(30),
+    ativos        DECIMAL(10,2),
+    PRIMARY KEY (agencia_nome),
+    CHECK (ativos >= 0)
+);
 
--- SQL Server
-create table Agencia (
-  agencia_nome char(20) not null,
-  agencia_cidade varchar(30),
-  ativos money
-)</pre>
-      <p><code>drop table</code> apaga a tabela e todos os seus dados. <code>alter table ... add</code> inclui uma nova coluna (as linhas já existentes recebem valor nulo nela); <code>alter table ... drop column</code> remove uma coluna existente.</p>
-      <pre class="schema-block">alter table agencia add endereco varchar(50)
-alter table agencia drop column endereco</pre>
+-- Adicionar e remover colunas
+ALTER TABLE agencia ADD COLUMN endereco VARCHAR(50);
+ALTER TABLE agencia DROP COLUMN endereco;
+
+-- Excluir tabela
+DROP TABLE agencia;</pre>
     </section>
-
     <section id="sql-chaves">
       <h3 style="margin-top:0">Chaves e restrições de integridade</h3>
       <ul>
-        <li><code>not null</code> — impede valor em branco.</li>
-        <li><code>primary key (coluna, ...)</code> — define a chave primária; já implica <code>not null</code> automaticamente.</li>
-        <li><code>check (condição)</code> — valida uma regra sobre o valor do campo.</li>
-        <li><code>foreign key (coluna) references OutraTabela</code> — declara uma chave estrangeira, amarrando a integridade referencial entre as tabelas.</li>
+        <li><code>NOT NULL</code> — impede valor em branco.</li>
+        <li><code>PRIMARY KEY</code> — unicidade + não nulo.</li>
+        <li><code>UNIQUE</code> — unicidade opcional.</li>
+        <li><code>CHECK</code> — valida condição.</li>
+        <li><code>DEFAULT</code> — valor padrão.</li>
+        <li><code>FOREIGN KEY</code> — integridade referencial.</li>
       </ul>
-      <pre class="schema-block">create table Agencia (
-  agencia_nome char(20) not null,
-  agencia_cidade varchar(30),
-  ativos decimal(10,2),
-  primary key (agencia_nome),
-  check (ativos &gt;= 0)
-)</pre>
-      <p>Inserindo registros com <code>insert into</code>:</p>
-      <pre class="schema-block">insert into Agencia (agencia_nome, agencia_cidade, ativos)
-values ('Portão', 'Curitiba', 115000)</pre>
-    </section>
+      <pre class="schema-block">CREATE TABLE Conta (
+    agencia_nome  VARCHAR(20),
+    cliente_nome  VARCHAR(20),
+    conta_numero  INT NOT NULL,
+    saldo         DECIMAL(10,2),
+    PRIMARY KEY (conta_numero),
+    FOREIGN KEY (agencia_nome) REFERENCES Agencia (agencia_nome),
+    FOREIGN KEY (cliente_nome) REFERENCES Cliente (cliente_nome)
+);
 
+INSERT INTO Agencia (agencia_nome, agencia_cidade, ativos)
+VALUES ('Portão', 'Curitiba', 115000);</pre>
+    </section>
     <section id="sql-exemplo">
       <h3 style="margin-top:0">Exemplo aplicado: sistema bancário</h3>
-      <p>Um modelo clássico para praticar chaves primárias e estrangeiras: agências possuem contas, contas pertencem a clientes, e cada depósito se relaciona a uma conta e a um cliente.</p>
       <pre class="schema-block">Agencia  (<span class="pk">agencia_nome</span>, agencia_cidade, ativos)
 Cliente  (<span class="pk">cliente_nome</span>, cliente_endereco, cliente_cidade)
 Conta    (<span class="pk">conta_numero</span>, saldo, <span class="fk">agencia_nome</span>, <span class="fk">cliente_nome</span>)
 Deposito (<span class="pk">cliente_nome</span>, <span class="pk">conta_numero</span>, valor)</pre>
-      <p>Em SQL padrão (Oracle / SQL Server):</p>
-      <pre class="schema-block">create table Conta (
-  agencia_nome char(20),
-  cliente_nome char(20),
-  conta_numero integer not null,
-  saldo integer,
-  primary key (conta_numero),
-  foreign key (agencia_nome) references Agencia,
-  foreign key (cliente_nome) references Cliente
-)
-
-create table Deposito (
-  cliente_nome char(20) not null,
-  conta_numero integer not null,
-  valor integer,
-  primary key (cliente_nome, conta_numero),
-  foreign key (conta_numero) references Conta,
-  foreign key (cliente_nome) references Cliente
-)</pre>
-      <div class="note">No MySQL, a cláusula <code>foreign key</code> exige indicar também a coluna referenciada na tabela de destino: <code>foreign key (agencia_nome) references Agencia (agencia_nome)</code>.</div>
+    </section>
+        <!-- ===== AULA 02 ===== -->
+    <section id="normalizacao-intro">
+      <h2>Normalização <span class="tag">Aula 02</span></h2>
+      <p>Normalizar é reorganizar os atributos de uma tabela para eliminar redundâncias, remover atributos multivalorados e evitar anomalias de inclusão, exclusão e alteração. O conceito foi formalizado por E. F. Codd a partir de 1970.</p>
+      <p>Problemas típicos de uma tabela não normalizada (<code>EMPREGADO_DEPTO</code>):</p>
+      <ul>
+        <li>Cadastrar departamento sem empregado → campos em branco.</li>
+        <li>Excluir o único empregado → perde-se também o departamento.</li>
+        <li>Alterar nome do departamento → atualizar em todas as linhas.</li>
+      </ul>
+    </section>
+    <section id="tnn">
+      <h3 style="margin-top:0">Tabela não normalizada (TÑN)</h3>
+      <pre class="schema-block">TÑN
+Proj(<span class="pk">CodProj</span>, Tipo, Descr,
+     (<span class="pk">CodEmp</span>, Nome, Cat, Sal, DataIni, TempAl))</pre>
+    </section>
+    <section id="dependencia-funcional">
+      <h3 style="margin-top:0">Dependência funcional</h3>
+      <p>Uma coluna <code>Y</code> depende funcionalmente de <code>X</code> quando, sempre que <code>X</code> aparece, <code>Y</code> é o mesmo. Notação: <code>X → Y</code>.</p>
+      <table>
+        <tr><th>Tipo</th><th>Quando ocorre</th></tr>
+        <tr><td>Total / completa</td><td>Depende de <em>toda</em> a chave composta.</td></tr>
+        <tr><td>Parcial</td><td>Depende de apenas <em>parte</em> da chave composta.</td></tr>
+        <tr><td>Transitiva</td><td>Depende de outro atributo não-chave.</td></tr>
+      </table>
+    </section>
+    <section id="1fn">
+      <h3 style="margin-top:0">Primeira Forma Normal (1FN)</h3>
+      <p>Todos os domínios contêm apenas <strong>valores atômicos</strong> — sem tabelas aninhadas.</p>
+      <pre class="schema-block">1FN
+Proj    (<span class="pk">CodProj</span>, Tipo, Descr)
+ProjEmp (<span class="pk">CodProj</span>, <span class="pk">CodEmp</span>, Nome, Cat, Sal, DataIni, TempAl)</pre>
+    </section>
+    <section id="2fn">
+      <h3 style="margin-top:0">Segunda Forma Normal (2FN)</h3>
+      <p>Estar na 1FN <strong>e</strong> todos os atributos não-chave dependerem <strong>totalmente</strong> da PK.</p>
+      <div class="note"><strong>Atalho:</strong> se a PK é um único campo, já está na 2FN.</div>
+      <pre class="schema-block">2FN
+Proj    (<span class="pk">CodProj</span>, Tipo, Descr)
+ProjEmp (<span class="pk">CodProj</span>, <span class="pk">CodEmp</span>, DataIni, TempAl)
+Emp     (<span class="pk">CodEmp</span>, Nome, Cat, Sal)</pre>
+    </section>
+    <section id="3fn">
+      <h3 style="margin-top:0">Terceira Forma Normal (3FN)</h3>
+      <p>Estar na 2FN <strong>e</strong> não conter dependências <strong>transitivas</strong>.</p>
+      <pre class="schema-block">3FN
+Proj    (<span class="pk">CodProj</span>, Tipo, Descr)
+ProjEmp (<span class="pk">CodProj</span>, <span class="pk">CodEmp</span>, DataIni, TempAl)
+Emp     (<span class="pk">CodEmp</span>, Nome, Cat)
+Cat     (<span class="pk">Cat</span>, Sal)</pre>
+    </section>
+    <section id="4fn5fn">
+      <h3 style="margin-top:0">4FN, 5FN e desnormalização</h3>
+      <ul>
+        <li><strong>FNBC:</strong> versão mais rigorosa da 3FN.</li>
+        <li><strong>4FN:</strong> elimina dependências multivaloradas independentes.</li>
+        <li><strong>5FN:</strong> decomposição que só pode ser reconstruída juntando 3+ tabelas.</li>
+      </ul>
+      <p><strong>Desnormalização:</strong> juntar tabelas conscientemente para melhorar desempenho de leitura (comum em data warehouses).</p>
+    </section>
+    <section id="stepper">
+      <h3 style="margin-top:0">Passo a passo: Proj → 3FN</h3>
+      <div class="stepper">
+        <div class="stepper-tabs">
+          <button class="stepper-tab active" data-step="0">TÑN</button>
+          <button class="stepper-tab" data-step="1">1ª FN</button>
+          <button class="stepper-tab" data-step="2">2ª FN</button>
+          <button class="stepper-tab" data-step="3">3ª FN</button>
+        </div>
+        <div class="stepper-body">
+          <div class="stepper-desc" id="step-desc"></div>
+          <div class="stepper-tables" id="step-tables"></div>
+        </div>
+      </div>
     </section>
 
-    <!-- ================= EXERCÍCIOS ================= -->
+    <!-- ===== AULA 03 ===== -->
+    <section id="sql-historico">
+      <h2>Introdução à linguagem SQL <span class="tag">Aula 03</span></h2>
+      <p>O modelo relacional foi proposto por E. F. Codd em 1970. A IBM criou a SEQUEL (depois SQL). O padrão ANSI saiu em 1986.</p>
+      <table>
+        <tr><th>Sigla</th><th>Significado</th><th>Comandos</th></tr>
+        <tr><td>DDL</td><td>Data Definition Language</td><td><code>CREATE</code>, <code>ALTER</code>, <code>DROP</code></td></tr>
+        <tr><td>DML</td><td>Data Manipulation Language</td><td><code>INSERT</code>, <code>UPDATE</code>, <code>DELETE</code></td></tr>
+        <tr><td>DQL</td><td>Data Query Language</td><td><code>SELECT</code></td></tr>
+        <tr><td>DCL</td><td>Data Control Language</td><td><code>GRANT</code>, <code>REVOKE</code></td></tr>
+        <tr><td>DTL</td><td>Data Transaction Language</td><td><code>COMMIT</code>, <code>ROLLBACK</code></td></tr>
+      </table>
+    </section>
+    <section id="sql-ddl">
+      <h3 style="margin-top:0">DDL — criar e alterar tabelas</h3>
+      <pre class="schema-block">-- MySQL
+CREATE TABLE Agencia (
+    agencia_nome  VARCHAR(20) NOT NULL,
+    agencia_cidade VARCHAR(30),
+    ativos        DECIMAL(10,2),
+    PRIMARY KEY (agencia_nome),
+    CHECK (ativos >= 0)
+);
+
+-- Adicionar e remover colunas
+ALTER TABLE agencia ADD COLUMN endereco VARCHAR(50);
+ALTER TABLE agencia DROP COLUMN endereco;
+
+-- Excluir tabela
+DROP TABLE agencia;</pre>
+    </section>
+    <section id="sql-chaves">
+      <h3 style="margin-top:0">Chaves e restrições de integridade</h3>
+      <ul>
+        <li><code>NOT NULL</code> — impede valor em branco.</li>
+        <li><code>PRIMARY KEY</code> — unicidade + não nulo.</li>
+        <li><code>UNIQUE</code> — unicidade opcional.</li>
+        <li><code>CHECK</code> — valida condição.</li>
+        <li><code>DEFAULT</code> — valor padrão.</li>
+        <li><code>FOREIGN KEY</code> — integridade referencial.</li>
+      </ul>
+      <pre class="schema-block">CREATE TABLE Conta (
+    agencia_nome  VARCHAR(20),
+    cliente_nome  VARCHAR(20),
+    conta_numero  INT NOT NULL,
+    saldo         DECIMAL(10,2),
+    PRIMARY KEY (conta_numero),
+    FOREIGN KEY (agencia_nome) REFERENCES Agencia (agencia_nome),
+    FOREIGN KEY (cliente_nome) REFERENCES Cliente (cliente_nome)
+);
+
+INSERT INTO Agencia (agencia_nome, agencia_cidade, ativos)
+VALUES ('Portão', 'Curitiba', 115000);</pre>
+    </section>
+    <section id="sql-exemplo">
+      <h3 style="margin-top:0">Exemplo aplicado: sistema bancário</h3>
+      <pre class="schema-block">Agencia  (<span class="pk">agencia_nome</span>, agencia_cidade, ativos)
+Cliente  (<span class="pk">cliente_nome</span>, cliente_endereco, cliente_cidade)
+Conta    (<span class="pk">conta_numero</span>, saldo, <span class="fk">agencia_nome</span>, <span class="fk">cliente_nome</span>)
+Deposito (<span class="pk">cliente_nome</span>, <span class="pk">conta_numero</span>, valor)</pre>
+    </section>
+        <!-- ===== EXERCÍCIOS ===== -->
     <section id="exercicios">
       <h2>Exercícios de fixação</h2>
-
       <div class="exercise">
-        <span class="exnum">Exercício 1 · Normalização até a 3FN</span>
-        <p style="margin-bottom:6px">Dada a relação abaixo, identifique as dependências funcionais e decomponha até a 3FN:</p>
-        <p class="schema" style="display:block; padding:10px 12px;">aluno (nro_aluno, cod_depto, nome_depto, sigla_depto, cod_orient, nome_orient, fone_orient, nro_créd, cod_curso)</p>
+        <span class="exnum">Exercício 1 · Normalização até 3FN</span>
+        <p class="schema" style="display:block;padding:10px 12px;">aluno (nro_aluno, cod_depto, nome_depto, sigla_depto, cod_orient, nome_orient, fone_orient, nro_créd, cod_curso)</p>
       </div>
-
       <div class="exercise">
         <span class="exnum">Exercício 2 · Aluno com múltiplos cursos</span>
-        <p style="margin-bottom:0">Um aluno pode estar matriculado em mais de um curso ao mesmo tempo. Modele essa situação a partir de:<br><span class="schema" style="display:block; padding:10px 12px; margin-top:6px;">aluno (nro_aluno, nome_aluno, nro_créditos, nro_depto, nome_depto, {nro_curso, descrição_curso, ano_ingresso})</span></p>
+        <p class="schema" style="display:block;padding:10px 12px;">aluno (nro_aluno, nome_aluno, nro_créditos, nro_depto, nome_depto, {nro_curso, descrição_curso, ano_ingresso})</p>
       </div>
-
       <div class="exercise">
         <span class="exnum">Exercício 3 · Relatório de avaliação de cursos</span>
-        <p style="margin-bottom:6px">Considerando as dependências funcionais abaixo, derive as tabelas nas formas 1FN, 2FN e 3FN, justificando cada passo:</p>
         <ul style="margin-bottom:0">
           <li>Código do Curso → Nome do Curso, Código da Área</li>
           <li>Código da Área → Descrição da Área</li>
-          <li>Matrícula do Funcionário → Nome, Data de Admissão, Código do Cargo</li>
+          <li>Matrícula → Nome, Data de Admissão, Código do Cargo</li>
           <li>Código do Cargo → Nome do Cargo</li>
-          <li>(Matrícula do Funcionário, Código do Curso) → Ano de conclusão, Avaliação</li>
+          <li>(Matrícula, Código do Curso) → Ano conclusão, Avaliação</li>
         </ul>
       </div>
-
       <div class="exercise">
         <span class="exnum">Exercício 4 · Histórico escolar</span>
-        <p style="margin-bottom:6px">Dependências funcionais do formulário de histórico escolar:</p>
         <ul style="margin-bottom:0">
           <li>Matrícula → Nome do aluno</li>
-          <li>Código do Curso → Curso, Total de créditos obrigatórios</li>
+          <li>Código do Curso → Curso, Total de créditos</li>
           <li>Disciplina → Nome, Créditos</li>
           <li>(Matrícula, Disciplina, Semestre) → Nota, Situação</li>
         </ul>
       </div>
-
       <div class="exercise">
         <span class="exnum">Exercício 5 · Sistema de vendas</span>
-        <p style="margin-bottom:0">Construa um DER aplicando os conceitos de normalização: em cada venda são vendidos vários produtos, e um produto pode aparecer em diferentes vendas. Cada venda é feita por um vendedor para um cliente, e cada produto fica guardado em uma prateleira.</p>
+        <p style="margin-bottom:0">Construa um DER: cada venda tem vários produtos, um produto aparece em diferentes vendas. Cada venda é feita por um vendedor para um cliente. Produto fica em uma prateleira.</p>
       </div>
-
       <div class="exercise">
         <span class="exnum">Exercício 6 · Administradora de imóveis</span>
-        <p style="margin-bottom:0">A administradora cuida de condomínios (formados por unidades condominiais) e de aluguéis. Cada unidade pode ter mais de um proprietário, e uma pessoa pode possuir várias unidades. Cada unidade tem no máximo um locatário por vez, mas uma pessoa pode alugar várias unidades. Identifique entidades, relacionamentos e normalize.</p>
+        <p style="margin-bottom:0">Condomínios formados por unidades. Cada unidade pode ter mais de um proprietário. Cada unidade tem no máximo um locatário. Normalize.</p>
       </div>
-
       <div class="exercise">
         <span class="exnum">Exercício 7 · Alocação de equipe</span>
-        <p style="margin-bottom:0">Em uma empresa de desenvolvimento de sistemas, pessoas são alocadas a tarefas e, no momento da alocação, também recebem um equipamento para executá-la. Crie o DER com entidades, relacionamentos, cardinalidades e as tabelas normalizadas.</p>
+        <p style="margin-bottom:0">Pessoas são alocadas a tarefas e recebem um equipamento. Crie o DER com cardinalidades e tabelas normalizadas.</p>
+      </div>
+      <div class="exercise">
+        <span class="exnum">Exercício 8 · Prática MySQL</span>
+        <p style="margin-bottom:0">Crie um banco de dados de biblioteca no MySQL com as tabelas: <code>livros</code>, <code>autores</code>, <code>usuarios</code> e <code>emprestimos</code>. Aplique PKs, FKs, tipos de dados corretos e constraints de integridade.</p>
       </div>
     </section>
 
-    <!-- ================= REFERÊNCIAS ================= -->
+    <!-- ===== FERRAMENTAS ===== -->
+    <section id="ferramentas">
+      <h2>Ferramentas online para prática</h2>
+      <div class="tools-grid">
+        <div class="tool-card">
+          <h4>Excalidraw</h4>
+          <p>Quadro branco colaborativo. Rascunhos de telas e diagramas.</p>
+          <a href="https://excalidraw.com" target="_blank" rel="noopener">excalidraw.com →</a>
+        </div>
+        <div class="tool-card">
+          <h4>Diagrams.net</h4>
+          <p>Editor de diagramas. ER diagrams, UML e fluxogramas.</p>
+          <a href="https://app.diagrams.net" target="_blank" rel="noopener">app.diagrams.net →</a>
+        </div>
+        <div class="tool-card">
+          <h4>MySQL Workbench</h4>
+          <p>Cliente oficial MySQL. Criação visual de tabelas e queries.</p>
+          <a href="https://www.mysql.com/products/workbench/" target="_blank" rel="noopener">mysql.com →</a>
+        </div>
+        <div class="tool-card">
+          <h4>dbdiagram.io</h4>
+          <p>Cria ER diagrams escrevendo código DBML. Exporta para MySQL.</p>
+          <a href="https://dbdiagram.io" target="_blank" rel="noopener">dbdiagram.io →</a>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== REFERÊNCIAS ===== -->
     <section id="referencias">
       <h2>Referências bibliográficas</h2>
       <ul class="refs">
         <li>HEUSER, Carlos Alberto. <em>Projeto de Banco de Dados.</em> Porto Alegre: Sagra Luzzatto, 2001.</li>
         <li>SILBERSCHATZ, Abraham; KORTH, Henry F.; SUDARSHAN, S. <em>Sistemas de Banco de Dados.</em> 3ª ed. São Paulo: Makron Books, 1999.</li>
         <li>DATE, C. J. <em>Introdução aos Sistemas de Bancos de Dados.</em> Rio de Janeiro: Campus, 2004.</li>
+        <li>ELMASRI, Ramez; NAVATHE, Shamkant. <em>Sistemas de Banco de Dados.</em> Cap. 1-3. Pearson, 2015.</li>
         <li>CASANOVA, Marco A. Material didático — PUC-Rio.</li>
       </ul>
     </section>
 
     <footer>
-      Guia de consulta preparado a partir do material das aulas de Banco de Dados II — uso didático.
+      <p>Guia de consulta — Prof. Josimar Menegatt · Curso Técnico em Desenvolvimento de Sistemas · SENAI · Banco de Dados</p>
     </footer>
   </main>
 </div>
@@ -669,80 +739,47 @@ create table Deposito (
 <a href="#" class="back-top" id="backTop" aria-label="Voltar ao topo">↑</a>
 
 <script>
-  // Active TOC link on scroll
-  const sections = document.querySelectorAll('main section[id]');
-  const links = document.querySelectorAll('.toc a');
-  const setActive = () => {
-    let current = '';
-    sections.forEach(sec => {
-      const rect = sec.getBoundingClientRect();
-      if (rect.top <= 120) current = sec.id;
-    });
-    links.forEach(a => {
-      a.classList.toggle('active', a.getAttribute('href') === '#' + current);
-    });
+  const sections=document.querySelectorAll('main section[id]');
+  const links=document.querySelectorAll('.toc a');
+  const setActive=()=>{
+    let current='';
+    sections.forEach(sec=>{if(sec.getBoundingClientRect().top<=120)current=sec.id;});
+    links.forEach(a=>{a.classList.toggle('active',a.getAttribute('href')==='#'+current);});
   };
-  window.addEventListener('scroll', () => {
+  window.addEventListener('scroll',()=>{
     setActive();
-    document.getElementById('backTop').classList.toggle('show', window.scrollY > 600);
+    document.getElementById('backTop').classList.toggle('show',window.scrollY>600);
   });
   setActive();
 
-  // Normalization stepper
-  const steps = [
-    {
-      desc: 'Tabela não normalizada: os dados de cada empregado ficam aninhados dentro da linha do projeto.',
-      tables: [
-        { name: 'Proj (TÑN)', fields: ['CodProj (PK)', 'Tipo', 'Descr', '↳ CodEmp (PK)', '↳ Nome', '↳ Cat', '↳ Sal', '↳ DataIni', '↳ TempAl'] }
-      ]
-    },
-    {
-      desc: '1ª FN: o grupo aninhado vira uma tabela própria, herdando a chave do projeto.',
-      tables: [
-        { name: 'Proj', fields: ['CodProj (PK)', 'Tipo', 'Descr'] },
-        { name: 'ProjEmp', fields: ['CodProj (PK)', 'CodEmp (PK)', 'Nome', 'Cat', 'Sal', 'DataIni', 'TempAl'] }
-      ]
-    },
-    {
-      desc: '2ª FN: Nome, Cat e Sal dependiam só de CodEmp (parte da chave) — viram uma tabela Emp separada.',
-      tables: [
-        { name: 'Proj', fields: ['CodProj (PK)', 'Tipo', 'Descr'] },
-        { name: 'ProjEmp', fields: ['CodProj (PK)', 'CodEmp (PK)', 'DataIni', 'TempAl'] },
-        { name: 'Emp', fields: ['CodEmp (PK)', 'Nome', 'Cat', 'Sal'] }
-      ]
-    },
-    {
-      desc: '3ª FN: Sal dependia de Cat (não diretamente de CodEmp) — dependência transitiva isolada em Cat.',
-      tables: [
-        { name: 'Proj', fields: ['CodProj (PK)', 'Tipo', 'Descr'] },
-        { name: 'ProjEmp', fields: ['CodProj (PK)', 'CodEmp (PK)', 'DataIni', 'TempAl'] },
-        { name: 'Emp', fields: ['CodEmp (PK)', 'Nome', 'Cat'] },
-        { name: 'Cat', fields: ['Cat (PK)', 'Sal'] }
-      ]
-    }
+  const steps=[
+    {desc:'Tabela não normalizada: dados de empregados aninhados na linha do projeto.',tables:[{name:'Proj (TÑN)',fields:['CodProj (PK)','Tipo','Descr','↳ CodEmp (PK)','↳ Nome','↳ Cat','↳ Sal','↳ DataIni','↳ TempAl']}]},
+    {desc:'1ª FN: grupo aninhado vira tabela própria, herdando a chave do projeto.',tables:[{name:'Proj',fields:['CodProj (PK)','Tipo','Descr']},{name:'ProjEmp',fields:['CodProj (PK)','CodEmp (PK)','Nome','Cat','Sal','DataIni','TempAl']}]},
+    {desc:'2ª FN: Nome, Cat e Sal dependiam só de CodEmp — viram tabela Emp separada.',tables:[{name:'Proj',fields:['CodProj (PK)','Tipo','Descr']},{name:'ProjEmp',fields:['CodProj (PK)','CodEmp (PK)','DataIni','TempAl']},{name:'Emp',fields:['CodEmp (PK)','Nome','Cat','Sal']}]},
+    {desc:'3ª FN: Sal dependia de Cat (não de CodEmp) — dependência transitiva isolada.',tables:[{name:'Proj',fields:['CodProj (PK)','Tipo','Descr']},{name:'ProjEmp',fields:['CodProj (PK)','CodEmp (PK)','DataIni','TempAl']},{name:'Emp',fields:['CodEmp (PK)','Nome','Cat']},{name:'Cat',fields:['Cat (PK)','Sal']}]}
   ];
-
-  const tabs = document.querySelectorAll('.stepper-tab');
-  const descEl = document.getElementById('step-desc');
-  const tablesEl = document.getElementById('step-tables');
-
+  const tabs=document.querySelectorAll('.stepper-tab');
+  const descEl=document.getElementById('step-desc');
+  const tablesEl=document.getElementById('step-tables');
   function renderStep(i){
-    tabs.forEach(t => t.classList.toggle('active', +t.dataset.step === i));
-    descEl.textContent = steps[i].desc;
-    tablesEl.innerHTML = steps[i].tables.map(t => `
-      <div class="mini-table">
-        <span class="tname">${t.name}</span>
-        <div class="fields">${t.fields.map(f => `<span>${f}${f===t.fields[t.fields.length-1]?'':','}</span>`).join(' ')}</div>
-      </div>
-    `).join('');
+    tabs.forEach(t=>t.classList.toggle('active',+t.dataset.step===i));
+    descEl.textContent=steps[i].desc;
+    tablesEl.innerHTML=steps[i].tables.map(t=>`<div class="mini-table"><span class="tname">${t.name}</span><div class="fields">${t.fields.map(f=>`<span>${f}${f===t.fields[t.fields.length-1]?'':','}</span>`).join(' ')}</div></div>`).join('');
   }
-
-  tabs.forEach(tab => {
-    tab.addEventListener('click', () => renderStep(+tab.dataset.step));
-  });
-
+  tabs.forEach(tab=>{tab.addEventListener('click',()=>renderStep(+tab.dataset.step));});
   renderStep(0);
-</script>
 
+  const searchBox=document.getElementById('search');
+  searchBox.addEventListener('input',()=>{
+    const q=searchBox.value.toLowerCase().trim();
+    links.forEach(a=>{
+      if(!q){a.style.display='';return;}
+      const text=a.textContent.toLowerCase();
+      const target=document.querySelector(a.getAttribute('href'));
+      const sectionText=target?target.textContent.toLowerCase():'';
+      a.style.display=(text.includes(q)||sectionText.includes(q))?'':'none';
+    });
+  });
+</script>
 </body>
 </html>
