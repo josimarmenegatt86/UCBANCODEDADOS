@@ -105,6 +105,51 @@
   .refs li:last-child{border-bottom:none;}
   @media print{.sidebar,.back-top,.search-box,.sidebar-toggle{display:none!important;}.shell{display:block;}body{background:white;color:black;font-size:11pt;}pre,code{background:#f5f5f5;color:black;border:1px solid #ccc;}.note,.card,.exercise,.stepper{border:1px solid #999;background:#f9f9f9;}a{color:black;text-decoration:none;}}
   @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto;}*{transition:none!important;}}
+/* ===== CORREÇÃO DE RESPONSIVIDADE ===== */
+html, body {
+  max-width: 100%;
+  overflow-x: hidden;
+  margin: 0;
+  padding: 0;
+}
+
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+main, .container, section, .card, .panel, .content, .wrap {
+  max-width: 100%;
+  width: 100%;
+  padding-left: 16px;
+  padding-right: 16px;
+}
+
+
+pre, code, table, .schema-block {
+  max-width: 100%;
+  overflow-x: auto;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+
+.panel, .card, .note, .exercise {
+  height: auto !important;
+  min-height: 0 !important;
+  margin-top: 0;
+}
+
+
+main {
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+}
+
+.search, input[type="search"], .search-box {
+  max-width: 100%;
+  width: 100%;
+}
 </style>
 </head>
 <body>
